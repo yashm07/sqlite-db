@@ -1,28 +1,31 @@
-# Makefile for my_project
+SRC_DIR := src
+BUILD_DIR := build
+INCLUDE_DIR := include
 
-# Compiler and flags
-CC = gcc
-CFLAGS = -Iinclude -Wall  # -I to include the "include/" directory, -Wall to enable all warnings
+CC := gcc
+CFLAGS := -Wall -I$(INCLUDE_DIR)
 
-# Source files and object files
-SRC = src/main.c src/io.c
-OBJ = $(SRC:.c=.o)
+# source files
+SRCS := $(wildcard $(SRC_DIR)/*.c)
 
-# Output executable name
-EXEC = my_program
+# object files
+OBJS := $(SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
 
-# Rule to link object files to create the executable
-$(EXEC): $(OBJ)
-	$(CC) $(OBJ) -o $(EXEC)
+# target location
+TARGET := $(BUILD_DIR)/db_sqlite
 
-# Rule to compile .c files into .o object files
-%.o: %.c
+all: $(TARGET)
+
+$(TARGET): $(OBJS)
+	$(CC) $(OBJS) -o $(TARGET)
+
+# move all build files into build directory
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(BUILD_DIR)  # Ensure the build directory exists
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Clean up object files and executable
+# clean command
 clean:
-	rm -f $(OBJ) $(EXEC)
+	rm -rf $(BUILD_DIR)
 
-# Install rule (optional)
-install:
-	cp $(EXEC) /usr/local/bin/
+.PHONY: all clean
