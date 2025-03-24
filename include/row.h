@@ -1,7 +1,5 @@
 #pragma once
 
-#define size_of_attribute(ptr, member) sizeof(((ptr*)0)->member)
-
 #define USERNAME_LENGTH 32
 #define EMAIL_LENGTH 255
 #define NUM_ARGS 3
@@ -9,7 +7,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "io.h"
+#define size_of_attribute(ptr, member) sizeof(((ptr*)0)->member)
+
+#define ID_SIZE size_of_attribute(Row, id)
+#define USERNAME_SIZE size_of_attribute(Row, username)
+#define EMAIL_SIZE size_of_attribute(Row, email)
+#define ID_OFFSET 0
+#define USERNAME_OFFSET ID_OFFSET + ID_SIZE
+#define EMAIL_OFFSET USERNAME_OFFSET + USERNAME_SIZE
+#define ROW_SIZE ID_SIZE + USERNAME_SIZE + EMAIL_SIZE
 
 /**
  * @brief Stores all fields of database row.
@@ -20,13 +26,6 @@ typedef struct {
     char email[EMAIL_LENGTH];
 } Row;
 
-const uint32_t ID_SIZE = size_of_attribute(Row, id);
-const uint32_t USERNAME_SIZE = size_of_attribute(Row, username);
-const uint32_t EMAIL_SIZE = size_of_attribute(Row, email);
-const uint32_t ID_OFFSET = 0;
-const uint32_t USERNAME_OFFSET = ID_OFFSET + ID_SIZE;
-const uint32_t EMAIL_OFFSET = USERNAME_OFFSET + USERNAME_SIZE;
-const uint32_t ROW_SIZE = ID_SIZE + USERNAME_SIZE + EMAIL_SIZE;
 
 /**
  * @brief Serializes row
@@ -43,3 +42,11 @@ void serialize_row(Row* source, void* dest);
  * @param Row* desintation to store info
  */
 void deserialize_row(void* source, Row* dest);
+
+
+/**
+ * @brief Prints all attributes of row
+ *
+ * @param Row* row
+ */
+void print_row(Row* row);

@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #include "io.h"
-#include "row.h"
+#include "table.h"
 
 /**
  * @brief Represents output statuses for statement.
@@ -30,6 +30,12 @@ typedef struct {
     Row data;
 } Statement;
 
+typedef enum {
+    STATEMENT_EXECUTION_SUCCESS,
+    STATEMENT_EXECUTION_ERROR,
+    STATEMENT_EXECUTION_TABLE_FULL,
+} StatementExecutionStatus;
+
 /**
  * @brief Identify SQL statement type. Represents how SQLite compiler parses string
  *  and outputs as bytecode.
@@ -45,5 +51,27 @@ StatementStatus identify_statement(InputBuffer* inputBuffer, Statement* statemen
  * @brief Process statement.
  *
  * @param Statement* statement info
+ * @param Table* table
+ * 
+ * @return StatementExecutionStatus
  */
-void process_statement(Statement* statement);
+StatementExecutionStatus process_statement(Statement* statement, Table* table);
+
+/**
+ * @brief Inserts statement info into table.
+ *
+ * @param Statement* statement struct with info
+ * @param Table* table to insert into
+ * 
+ * @return StatementExecutionStatus
+ */
+StatementExecutionStatus insert(Statement* statement, Table* table);
+
+/**
+ * @brief SELECT * from table
+ *
+ * @param Table* table to insert into
+ * 
+ * @return StatementExecutionStatus
+ */
+StatementExecutionStatus select(Table* table);

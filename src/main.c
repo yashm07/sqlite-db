@@ -1,12 +1,14 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "io.h"
 #include "meta.h"
 #include "statement.h"
 
 int main() {
     InputBuffer* inputBuffer = createInputBuffer();
+    
+    // assume single table for now
+    Table* table = create_table();
     
     while (1) {
         printDefaultPrompt();
@@ -31,7 +33,17 @@ int main() {
                 continue;
         }
 
-        process_statement(&statement);
+        switch (process_statement(&statement, table)) {
+            case (STATEMENT_EXECUTION_SUCCESS):
+                printf("completed.\n");
+                break;
+            case (STATEMENT_EXECUTION_TABLE_FULL):
+                printf("incomplete. table is full.\n");
+                break;
+            case (STATEMENT_EXECUTION_ERROR):
+                printf("incomplete. ran into error.\n");
+                break;
+        }
     }
 
     closeInputBuffer(inputBuffer);

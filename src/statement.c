@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "statement.h"
+#include "row.h"
 
 StatementStatus identify_statement(InputBuffer* inputBuffer, Statement* statement) {
     if (strncmp(inputBuffer->buffer, "insert", 6) == 0) {
@@ -31,13 +32,34 @@ StatementStatus identify_statement(InputBuffer* inputBuffer, Statement* statemen
     return STATEMENT_INVALID;
 };
 
-void process_statement(Statement* statement) {
+StatementExecutionStatus process_statement(Statement* statement, Table* table) {
     switch (statement->type) {
         case (STATEMENT_INSERT):
-            printf("insert stuff. \n");
-            break;
+            return insert(statement, table);
         case (STATEMENT_SELECT):
-            printf("select stuff. \n");
-            break;
+            return select(table);
     }
+}
+
+StatementExecutionStatus insert(Statement* statement, Table* table) {
+    if (table->numRows > TABLE_MAX_ROWS) {
+        return STATEMENT_EXECUTION_TABLE_FULL;
+    }
+
+    Row* row_to_insert = &(statement->data);
+    serialize_row(row_to_insert, get_row_address(table, table->numRows));
+    table->numRows += 1;
+
+    return STATEMENT_EXECUTION_SUCCESS;
+}
+
+StatementExecutionStatus select(Table* table) {
+    Row row;
+
+    for (u_int32_t i = 0; i < table->numRows; i++) {
+        deserialize_row(get_row_address(table, i), &row);
+        print_row(&row);
+    }
+
+    return STATEMENT_EXECUTION_SUCCESS;
 }
