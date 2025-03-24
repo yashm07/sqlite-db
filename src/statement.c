@@ -7,6 +7,19 @@
 StatementStatus identify_statement(InputBuffer* inputBuffer, Statement* statement) {
     if (strncmp(inputBuffer->buffer, "insert", 6) == 0) {
         statement->type = STATEMENT_INSERT;
+
+        uint8_t numArgs = sscanf(
+            inputBuffer->buffer, "insert %d %s %s", 
+            &(statement->data.id),
+            statement->data.username,
+            statement->data.email
+        );
+
+        if (numArgs < NUM_ARGS) {
+            return STATEMENT_INVALID;
+        }
+        
+
         return STATEMENT_SUCCESS;
     }
 

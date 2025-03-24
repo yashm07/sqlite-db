@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "io.h"
+#include "row.h"
 
 /**
  * @brief Represents output statuses for statement.
@@ -26,6 +27,7 @@ typedef enum {
  */
 typedef struct {
     StatementType type;
+    Row data;
 } Statement;
 
 /**
