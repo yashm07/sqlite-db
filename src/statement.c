@@ -56,8 +56,10 @@ StatementExecutionStatus insert(Statement* statement, Table* table) {
 StatementExecutionStatus select(Table* table) {
     Row row;
 
-    for (u_int32_t i = 0; i < table->numRows; i++) {
-        deserialize_row(get_row_address(table, i), &row);
+    for (u_int32_t i = 0; i < table->numRows; i++) {    
+        Row* row_addr = get_row_address(table, i);
+        
+        deserialize_row(row_addr, &row);
         print_row(&row);
     }
 

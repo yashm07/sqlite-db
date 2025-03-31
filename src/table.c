@@ -31,5 +31,5 @@ void* get_row_address(Table* table, uint32_t rowNum) {
     uint32_t rowOffset = rowNum % ROWS_PER_PAGE;
     uint32_t rowByteOffset = rowOffset * ROW_SIZE;
 
-    return page + rowByteOffset;
+    return table->pages[pageNum] + rowByteOffset;
 }

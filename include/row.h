@@ -13,9 +13,9 @@
 #define USERNAME_SIZE size_of_attribute(Row, username)
 #define EMAIL_SIZE size_of_attribute(Row, email)
 #define ID_OFFSET 0
-#define USERNAME_OFFSET ID_OFFSET + ID_SIZE
-#define EMAIL_OFFSET USERNAME_OFFSET + USERNAME_SIZE
-#define ROW_SIZE ID_SIZE + USERNAME_SIZE + EMAIL_SIZE
+#define USERNAME_OFFSET (ID_OFFSET + ID_SIZE)
+#define EMAIL_OFFSET (USERNAME_OFFSET + USERNAME_SIZE)
+#define ROW_SIZE (ID_SIZE + USERNAME_SIZE + EMAIL_SIZE)
 
 /**
  * @brief Stores all fields of database row.

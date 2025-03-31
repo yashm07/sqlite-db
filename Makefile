@@ -4,7 +4,7 @@ INCLUDE_DIR := include
 TEST_DIR := tests
 
 CC := gcc
-CFLAGS := -Wall -I$(INCLUDE_DIR)
+CFLAGS := -g -Wall -I$(INCLUDE_DIR)
 LDFLAGS := -lcmocka
 
 # Source files (main program)

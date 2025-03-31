@@ -7,8 +7,8 @@
 
 #define PAGES_PER_TABLE 100
 #define PAGE_SIZE 4096
-#define ROWS_PER_PAGE PAGE_SIZE / ROW_SIZE
-#define TABLE_MAX_ROWS ROWS_PER_PAGE * PAGES_PER_TABLE
+#define ROWS_PER_PAGE (PAGE_SIZE / ROW_SIZE)
+#define TABLE_MAX_ROWS (ROWS_PER_PAGE * PAGES_PER_TABLE)
 
 /**
  * @brief Represents Table to store pages.
@@ -33,7 +33,7 @@ Table* create_table();
 void free_table(Table* table);
 
 /**
- * @brief Gets row address
+ * @brief Gets row address. If page not created, allocate memory.
  *
  * @param Table* table pointer
  * @param uint32_t row number to access
