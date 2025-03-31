@@ -6,25 +6,38 @@
 #include "row.h"
 
 StatementStatus identify_statement(InputBuffer* inputBuffer, Statement* statement) {
-    if (strncmp(inputBuffer->buffer, "insert", 6) == 0) {
+    char* keyword = strtok(inputBuffer->buffer, " ");
+    
+    if (strcmp(keyword, "insert") == 0) {
         statement->type = STATEMENT_INSERT;
+        
+        
+        char* idStr = strtok(NULL, " ");
+        char* username = strtok(NULL, " ");
+        char* email = strtok(NULL, " ");
 
-        uint8_t numArgs = sscanf(
-            inputBuffer->buffer, "insert %d %s %s", 
-            &(statement->data.id),
-            statement->data.username,
-            statement->data.email
-        );
-
-        if (numArgs < NUM_ARGS) {
+        if (idStr == NULL || username == NULL || email == NULL) {
             return STATEMENT_INVALID;
         }
-        
+
+        if (strlen(username) > USERNAME_LENGTH || strlen(email) > EMAIL_LENGTH) {
+            return STRINGS_TOO_LONG;
+        }
+
+        int id = atoi(idStr);
+
+        if (id < 0) {
+            return NEGATIVE_ID;
+        }
+
+        statement->data.id = id;
+        strcpy(statement->data.username, username);
+        strcpy(statement->data.email, email);
 
         return STATEMENT_SUCCESS;
     }
 
-    if (strcmp(inputBuffer->buffer, "select") == 0) {
+    if (strcmp(keyword, "select") == 0) {
         statement->type = STATEMENT_SELECT;
         return STATEMENT_SUCCESS;
     }

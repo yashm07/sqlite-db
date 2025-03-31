@@ -11,7 +11,9 @@
  */
 typedef enum {
     STATEMENT_SUCCESS,
-    STATEMENT_INVALID
+    STATEMENT_INVALID,
+    STRINGS_TOO_LONG,
+    NEGATIVE_ID
 } StatementStatus;
 
 /**

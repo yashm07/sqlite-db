@@ -22,8 +22,8 @@
  */
 typedef struct {
     uint32_t id;
-    char username[USERNAME_LENGTH];
-    char email[EMAIL_LENGTH];
+    char username[USERNAME_LENGTH + 1];
+    char email[EMAIL_LENGTH + 1];
 } Row;
 
 

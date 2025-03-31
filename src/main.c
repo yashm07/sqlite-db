@@ -31,6 +31,12 @@ int main() {
             case (STATEMENT_INVALID):
                 printf("Invalid statement '%s' \n", inputBuffer->buffer);
                 continue;
+            case (STRINGS_TOO_LONG):
+                printf("String is too long. '%s' \n", inputBuffer->buffer);
+                continue;
+            case (NEGATIVE_ID):
+                printf("ID is negative. '%s' \n", inputBuffer->buffer);
+                continue;
         }
 
         switch (process_statement(&statement, table)) {
