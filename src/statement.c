@@ -50,7 +50,7 @@ StatementExecutionStatus process_statement(Statement* statement, Table* table) {
         case (STATEMENT_INSERT):
             return insert(statement, table);
         case (STATEMENT_SELECT):
-            return select(table);
+            return select_all(table);
     }
 }
 
@@ -66,7 +66,7 @@ StatementExecutionStatus insert(Statement* statement, Table* table) {
     return STATEMENT_EXECUTION_SUCCESS;
 }
 
-StatementExecutionStatus select(Table* table) {
+StatementExecutionStatus select_all(Table* table) {
     Row row;
 
     for (u_int32_t i = 0; i < table->numRows; i++) {    

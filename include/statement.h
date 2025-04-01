@@ -76,4 +76,4 @@ StatementExecutionStatus insert(Statement* statement, Table* table);
  * 
  * @return StatementExecutionStatus
  */
-StatementExecutionStatus select(Table* table);
+StatementExecutionStatus select_all(Table* table);

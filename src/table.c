@@ -1,35 +1,71 @@
+#include <fcntl.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 #include "table.h"
 #include "row.h"
 
-Table* create_table() {
-    Table* table = (Table*)malloc(sizeof(Table));
-    table->numRows = 0;
-
-    for (uint32_t i = 0; i < PAGES_PER_TABLE; i++) {
-        table->pages[i] = NULL;
-    }
-
-    return table;
-};
-
-void free_table(Table* table) {
-    for(uint32_t i = 0; i < PAGES_PER_TABLE; i++) {
-        free(table->pages[i]);
-    }
-
-    free(table);
-};
-
 void* get_row_address(Table* table, uint32_t rowNum) {
     uint32_t pageNum = rowNum / ROWS_PER_PAGE;
-    void* page = table->pages[pageNum];
-
-    if (page == NULL) {
-        table->pages[pageNum] = malloc(PAGE_SIZE);
-    }
+    void* page = get_page(table->pager, pageNum);
 
     uint32_t rowOffset = rowNum % ROWS_PER_PAGE;
     uint32_t rowByteOffset = rowOffset * ROW_SIZE;
 
-    return table->pages[pageNum] + rowByteOffset;
+    return page + rowByteOffset;
 }
+
+Pager* create_pager(const char* filename) {
+    int fd = open(filename, O_RDWR | O_CREAT, S_IWUSR | S_IRUSR);
+
+    if (fd == -1) {
+        printf("cannot open file. \n");
+        exit(EXIT_FAILURE);
+    }
+
+    off_t fileLength = lseek(fd, 0, SEEK_END);
+
+    Pager* pager = malloc(sizeof(Pager));
+    pager->file_descriptor = fd;
+    pager->file_length = fileLength;
+    strcpy(pager->filename, filename);
+
+    for (uint32_t i = 0; i < PAGES_PER_TABLE; i++) {
+        pager->pages[i] = NULL;
+    }
+
+    return pager;
+}
+
+Pager* get_page(Pager* pager, uint32_t pageNum) {
+    if (pageNum > PAGES_PER_TABLE) {
+        printf("page number out of range. must be less than %d", PAGES_PER_TABLE);
+        exit(EXIT_FAILURE);
+    }
+
+    // cache miss
+    if (pager->pages[pageNum] == NULL) {
+        void* page = malloc(PAGE_SIZE);
+        uint32_t numPages = pager->file_length / PAGE_SIZE;
+
+        // remaining data - write to partial page
+        if (pager->file_length % PAGE_SIZE) {
+            numPages += 1;
+        }
+
+        if (pageNum <= numPages) {
+            lseek(pager->file_descriptor, pageNum * PAGE_SIZE, SEEK_SET);
+            ssize_t bytesRead = read(pager->file_descriptor, page, PAGE_SIZE);
+
+            if (bytesRead == -1) {
+                printf("cannot read file '%s'", pager->filename);
+                exit(EXIT_FAILURE);
+            }
+        }
+
+        pager->pages[pageNum] = page;
+    }
+
+    return pager->pages[pageNum];
+};
