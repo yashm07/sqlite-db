@@ -11,6 +11,8 @@ brew install cmocka
 xtools stuff
 
 make
-db_sqlite/
+./build/db_sqlite filename
 ```
 
+# TODOs
+- improve error handling/messaging
