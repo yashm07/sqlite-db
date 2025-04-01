@@ -69,3 +69,24 @@ Pager* get_page(Pager* pager, uint32_t pageNum) {
 
     return pager->pages[pageNum];
 };
+
+void flush_page(Pager* pager, uint32_t pageNum, uint32_t size) {
+    if (pager->pages[pageNum] == NULL) {
+        printf("error: cannot flush null page. \n");
+        exit(EXIT_FAILURE);
+    }
+
+    off_t offset = lseek(pager->file_descriptor, pageNum * PAGE_SIZE, SEEK_SET);
+
+    if (offset == -1) {
+        printf("error: cannot seek.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    ssize_t bytesWritten = write(pager->file_descriptor, pager->pages[pageNum], size);
+
+    if (bytesWritten == -1) {
+        printf("error: cannot write page to file.\n");
+        exit(EXIT_FAILURE);
+    }
+};
