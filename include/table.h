@@ -17,6 +17,7 @@
  */
 typedef struct {
     int file_descriptor;
+    uint32_t num_pages;
     uint32_t file_length;
     void* pages[PAGES_PER_TABLE];
     char filename[MAX_FILENAME_LENGTH + 1];
@@ -26,7 +27,7 @@ typedef struct {
  * @brief Represents Table to store pages.
  */
 typedef struct {
-    uint32_t numRows;
+    uint32_t root_page_num;
     Pager* pager;
 } Table;
 
@@ -55,6 +56,5 @@ Pager* get_page(Pager* pager, uint32_t pageNum);
  *
  * @param Pager* pager
  * @param uint32_t pageNum
- * @param uint32_t size
  */
-void flush_page(Pager* pager, uint32_t pageNum, uint32_t size);
+void flush_page(Pager* pager, uint32_t pageNum);

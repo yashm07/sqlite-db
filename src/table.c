@@ -21,6 +21,12 @@ Pager* create_pager(const char* filename) {
     pager->file_descriptor = fd;
     pager->file_length = fileLength;
     strcpy(pager->filename, filename);
+    pager->num_pages = (fileLength / PAGE_SIZE);
+
+    if (fileLength % PAGE_SIZE != 0) {
+        printf("error: the file is not a whole number of pages.\n");
+        exit(EXIT_FAILURE);
+    }
 
     for (uint32_t i = 0; i < PAGES_PER_TABLE; i++) {
         pager->pages[i] = NULL;
@@ -56,12 +62,17 @@ Pager* get_page(Pager* pager, uint32_t pageNum) {
         }
 
         pager->pages[pageNum] = page;
+        
+        if (pageNum >= pager->num_pages) {
+            pager->num_pages = pageNum + 1;
+        }
+
     }
 
     return pager->pages[pageNum];
 };
 
-void flush_page(Pager* pager, uint32_t pageNum, uint32_t size) {
+void flush_page(Pager* pager, uint32_t pageNum) {
     if (pager->pages[pageNum] == NULL) {
         printf("error: cannot flush null page. \n");
         exit(EXIT_FAILURE);
@@ -74,7 +85,7 @@ void flush_page(Pager* pager, uint32_t pageNum, uint32_t size) {
         exit(EXIT_FAILURE);
     }
 
-    ssize_t bytesWritten = write(pager->file_descriptor, pager->pages[pageNum], size);
+    ssize_t bytesWritten = write(pager->file_descriptor, pager->pages[pageNum], PAGE_SIZE);
 
     if (bytesWritten == -1) {
         printf("error: cannot write page to file.\n");

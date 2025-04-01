@@ -2,9 +2,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "cursor.h"
 #include "statement.h"
-#include "row.h"
+#include "cursor.h"
+#include "node.h"
 
 StatementStatus identify_statement(InputBuffer* inputBuffer, Statement* statement) {
     char* keyword = strtok(inputBuffer->buffer, " ");
@@ -56,15 +56,16 @@ StatementExecutionStatus process_statement(Statement* statement, Table* table) {
 }
 
 StatementExecutionStatus insert(Statement* statement, Table* table) {
-    if (table->numRows > TABLE_MAX_ROWS) {
+    void *node = get_page(table->pager, table->root_page_num);
+
+    if (*(get_leaf_node_num_cells(node)) >= LEAF_NODE_MAX_CELLS) {
         return STATEMENT_EXECUTION_TABLE_FULL;
     }
 
     Row* row_to_insert = &(statement->data);
     Cursor* cursor = table_end(table);
 
-    serialize_row(row_to_insert, get_row_address(cursor));
-    table->numRows += 1;
+    insert_leaf_node(cursor, row_to_insert->id, row_to_insert);
 
     free(cursor);
 
@@ -76,7 +77,7 @@ StatementExecutionStatus select_all(Table* table) {
     Row row;
 
     while (!(cursor->end_of_table)) {
-        Row* rowAddr = get_row_address(cursor);
+        void* rowAddr = get_cursor_value(cursor);
         deserialize_row(rowAddr, &row);
         print_row(&row);
 

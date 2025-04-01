@@ -11,7 +11,8 @@
  */
 typedef struct {
     Table* table;
-    uint32_t row_num;   
+    uint32_t page_num;   
+    uint32_t cell_num;   
     // position end of table - last entry + 1
     bool end_of_table;
 } Cursor;
@@ -41,7 +42,7 @@ Cursor* table_end(Table* table);
  * 
  * @return row address
  */
-void* get_row_address(Cursor* cursor);
+void* get_cursor_value(Cursor* cursor);
 
 /**
  * @brief Moves cursor up 1.
@@ -49,3 +50,13 @@ void* get_row_address(Cursor* cursor);
  * @param Cursor* cursor
  */
 void cursor_advance(Cursor* cursor);
+
+/**
+ * @brief Insert leaf node.
+ *
+ * @param Cursor* cursor
+ * @param uint32_t key
+ * @param Row* row
+ */
+void insert_leaf_node(Cursor* cursor, uint32_t key, Row* row);
+

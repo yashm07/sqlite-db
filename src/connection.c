@@ -1,41 +1,34 @@
 #include "connection.h"
+#include "node.h"
 
 Table* open_db_connection(const char* filename) {
     Pager* pager = create_pager(filename);
-    uint32_t numRows = pager->file_length / ROW_SIZE;
 
     Table* table = (Table*)malloc(sizeof(Table));
     
-    table->numRows = numRows;
     table->pager = pager;
+    table->root_page_num = 0;
+
+    // new file
+    if (pager->num_pages == 0) {
+        void* root_node = get_page(pager, 0);
+        init_leaf_node(root_node);
+    }
 
     return table;
 };
 
 void close_db_connection(Table* table) {
     Pager* pager = table->pager;
-    uint32_t numFullPages = table->numRows / ROWS_PER_PAGE;
 
-    for (uint32_t i = 0; i < numFullPages; i++) {
+    for (uint32_t i = 0; i < pager->num_pages; i++) {
         if (pager->pages[i] == NULL) {
             continue;
         }
 
-        flush_page(pager, i, PAGE_SIZE);
+        flush_page(pager, i);
         free(pager->pages[i]);
         pager->pages[i] = NULL;
-    }
-
-    uint32_t remainingRows = table->numRows % ROWS_PER_PAGE;
-
-    if (remainingRows > 0) {
-        uint32_t pageNum = numFullPages;
-
-        if (pager->pages[pageNum] != NULL) {
-            flush_page(pager, pageNum, remainingRows * ROW_SIZE);
-            free(pager->pages[pageNum]);
-            pager->pages[pageNum] = NULL;
-        }
     }
 
     int result = close(pager->file_descriptor);

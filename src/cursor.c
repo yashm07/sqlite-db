@@ -1,13 +1,20 @@
 #include <stdbool.h>
+#include <string.h>
 
 #include "cursor.h"
+#include "node.h"
 
 Cursor* table_start(Table* table) {
     Cursor* cursor = malloc(sizeof(Cursor));
 
     cursor->table = table;
-    cursor->row_num = 0;
-    cursor->end_of_table = (table->numRows == 0);
+    cursor->page_num = table->root_page_num;
+    cursor->cell_num = 0;
+    
+    void* root_node = get_page(table->pager, table->root_page_num);
+    uint32_t num_cells = *get_leaf_node_num_cells(root_node);
+
+    cursor->end_of_table = (num_cells == 0);
 
     return cursor;
 };
@@ -16,27 +23,54 @@ Cursor* table_end(Table* table) {
     Cursor* cursor = malloc(sizeof(Cursor));
 
     cursor->table = table;
-    cursor->row_num = table->numRows;
+    cursor->page_num = table->root_page_num;
+    
+    void* root_node = get_page(table->pager, table->root_page_num);
+    uint32_t num_cells = *get_leaf_node_num_cells(root_node);
+    cursor->cell_num = num_cells;
     cursor->end_of_table = true;
 
     return cursor;
 };
 
-void* get_row_address(Cursor* cursor) {
-    uint32_t rowNum = cursor->row_num;
-    uint32_t pageNum = rowNum / ROWS_PER_PAGE;
+void* get_cursor_value(Cursor* cursor) {
+    uint32_t pageNum = cursor->page_num;
     void* page = get_page(cursor->table->pager, pageNum);
 
-    uint32_t rowOffset = rowNum % ROWS_PER_PAGE;
-    uint32_t rowByteOffset = rowOffset * ROW_SIZE;
-
-    return page + rowByteOffset;
+    return get_leaf_node_value(page, cursor->cell_num);
 }
 
 void cursor_advance(Cursor* cursor) {
-    cursor->row_num += 1;
+    uint32_t pageNum = cursor->page_num;
+    void* node = get_page(cursor->table->pager, pageNum);
 
-    if (cursor->row_num >= cursor->table->numRows) {
+    cursor->cell_num += 1;
+
+    if (cursor->cell_num >= (*get_leaf_node_num_cells(node))) {
         cursor->end_of_table = true;
     }
 };
+
+void insert_leaf_node(Cursor* cursor, uint32_t key, Row* row) {
+    void* node = get_page(cursor->table->pager, cursor->page_num);
+
+    uint32_t num_cells = *get_leaf_node_num_cells(node);
+
+    if (num_cells >= LEAF_NODE_MAX_CELLS) {
+        printf("error: the node is full. must split node.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if (cursor->cell_num < num_cells) {
+        // shift up
+        for (uint32_t i = num_cells; i > cursor->cell_num; i--) {
+            memcpy(get_leaf_node_cell(node, i), get_leaf_node_cell(node, i-1), LEAF_NODE_CELL_SIZE);
+        }
+    }
+
+    *(get_leaf_node_num_cells(node)) += 1;
+    *(get_leaf_node_key(node, cursor->cell_num)) = key;
+    serialize_row(row, get_leaf_node_value(node, cursor->cell_num));
+};
+
+
