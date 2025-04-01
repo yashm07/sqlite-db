@@ -6,15 +6,6 @@
 #include "table.h"
 #include "row.h"
 
-void* get_row_address(Table* table, uint32_t rowNum) {
-    uint32_t pageNum = rowNum / ROWS_PER_PAGE;
-    void* page = get_page(table->pager, pageNum);
-
-    uint32_t rowOffset = rowNum % ROWS_PER_PAGE;
-    uint32_t rowByteOffset = rowOffset * ROW_SIZE;
-
-    return page + rowByteOffset;
-}
 
 Pager* create_pager(const char* filename) {
     int fd = open(filename, O_RDWR | O_CREAT, S_IWUSR | S_IRUSR);

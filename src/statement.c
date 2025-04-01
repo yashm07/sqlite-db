@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "cursor.h"
 #include "statement.h"
 #include "row.h"
 
@@ -60,21 +61,29 @@ StatementExecutionStatus insert(Statement* statement, Table* table) {
     }
 
     Row* row_to_insert = &(statement->data);
-    serialize_row(row_to_insert, get_row_address(table, table->numRows));
+    Cursor* cursor = table_end(table);
+
+    serialize_row(row_to_insert, get_row_address(cursor));
     table->numRows += 1;
+
+    free(cursor);
 
     return STATEMENT_EXECUTION_SUCCESS;
 }
 
 StatementExecutionStatus select_all(Table* table) {
+    Cursor* cursor = table_start(table);
     Row row;
 
-    for (u_int32_t i = 0; i < table->numRows; i++) {    
-        Row* row_addr = get_row_address(table, i);
-        
-        deserialize_row(row_addr, &row);
+    while (!(cursor->end_of_table)) {
+        Row* rowAddr = get_row_address(cursor);
+        deserialize_row(rowAddr, &row);
         print_row(&row);
+
+        cursor_advance(cursor);
     }
+
+    free(cursor);
 
     return STATEMENT_EXECUTION_SUCCESS;
 }

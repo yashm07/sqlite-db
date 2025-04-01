@@ -32,16 +32,6 @@ typedef struct {
 
 
 /**
- * @brief Gets row address. If page not created, allocate memory.
- *
- * @param Table* table pointer
- * @param uint32_t row number to access
- * 
- * @return row address
- */
-void* get_row_address(Table* table, uint32_t rowNum);
-
-/**
  * @brief Creates new pager. Opens database file and stores properties.
  *
  * @param const char* filename to read
