@@ -7,11 +7,11 @@
 
 // leaf/internal node header fields
 #define NODE_TYPE_SIZE sizeof(uint8_t)
-#define NODE_TYPE_OFFSET 0;
+#define NODE_TYPE_OFFSET 0
 #define IS_ROOT_SIZE sizeof(uint8_t)
 #define IS_ROOT_OFFSET NODE_TYPE_SIZE
 #define PARENT_POINTER_SIZE sizeof(uint32_t)
-#define PARENT_POINTER_OFFSET (IS_ROOT_OFFSET + IS_ROOT_SIZE);
+#define PARENT_POINTER_OFFSET (IS_ROOT_OFFSET + IS_ROOT_SIZE)
 #define COMMON_NODE_HEADER_SIZE (NODE_TYPE_SIZE + IS_ROOT_SIZE + PARENT_POINTER_SIZE)
 
 // leaf node header fields
@@ -82,3 +82,20 @@ void* get_leaf_node_value(void* node, uint32_t cellNum);
  * @param void* node
  */
 void init_leaf_node(void* node);
+
+/**
+ * @brief Get node type. Leaf or internal node.
+ *
+ * @param void* node
+ * 
+ * @return NodeType
+ */
+NodeType get_node_type(void* node);
+
+/**
+ * @brief Set node type. Leaf or internal node.
+ *
+ * @param void* node
+ * @param NodeType node type
+ */
+void set_node_type(void* node, NodeType node_type);

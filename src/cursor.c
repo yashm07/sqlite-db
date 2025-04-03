@@ -19,18 +19,16 @@ Cursor* table_start(Table* table) {
     return cursor;
 };
 
-Cursor* table_end(Table* table) {
-    Cursor* cursor = malloc(sizeof(Cursor));
+Cursor* table_find(Table* table, uint32_t key) {
+    uint32_t root_page_num = table->root_page_num;
+    void* root_node = get_page(table->pager, root_page_num);
 
-    cursor->table = table;
-    cursor->page_num = table->root_page_num;
-    
-    void* root_node = get_page(table->pager, table->root_page_num);
-    uint32_t num_cells = *get_leaf_node_num_cells(root_node);
-    cursor->cell_num = num_cells;
-    cursor->end_of_table = true;
-
-    return cursor;
+    if (get_node_type(root_node) == LEAF_NODE) {
+        return find_cell_leaf_node(table, root_page_num, key);
+    } else {
+        printf("internal node!");
+        exit(EXIT_FAILURE);
+    }
 };
 
 void* get_cursor_value(Cursor* cursor) {
@@ -73,4 +71,33 @@ void insert_leaf_node(Cursor* cursor, uint32_t key, Row* row) {
     serialize_row(row, get_leaf_node_value(node, cursor->cell_num));
 };
 
+Cursor* find_cell_leaf_node(Table* table, uint32_t page_num, uint32_t key) {
+    void* node = get_page(table->pager, page_num);
+    uint32_t num_cells = *get_leaf_node_num_cells(node);
 
+    Cursor* cursor = malloc(sizeof(Cursor));
+    cursor->table = table;
+    cursor->page_num = page_num;
+
+    uint32_t l = 0;
+    uint32_t r = num_cells;
+
+    while (l < r) {
+        uint32_t mid_idx = (l+r)/2;
+        uint32_t key_val = *get_leaf_node_key(node, mid_idx);
+
+        if (key == key_val) {
+            cursor->cell_num = mid_idx;
+            return cursor;
+        }
+
+        if (key > key_val) {
+            l = mid_idx + 1;   
+        } else {
+            r = mid_idx;
+        }
+    }
+
+    cursor->cell_num = l;
+    return cursor;
+};

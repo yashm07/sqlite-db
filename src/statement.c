@@ -57,16 +57,26 @@ StatementExecutionStatus process_statement(Statement* statement, Table* table) {
 
 StatementExecutionStatus insert(Statement* statement, Table* table) {
     void *node = get_page(table->pager, table->root_page_num);
+    uint32_t num_cells = *(get_leaf_node_num_cells(node));
 
-    if (*(get_leaf_node_num_cells(node)) >= LEAF_NODE_MAX_CELLS) {
+    if (num_cells >= LEAF_NODE_MAX_CELLS) {
         return STATEMENT_EXECUTION_TABLE_FULL;
     }
 
     Row* row_to_insert = &(statement->data);
-    Cursor* cursor = table_end(table);
+
+    uint32_t key_to_insert = row_to_insert->id;
+    Cursor* cursor = table_find(table, key_to_insert);
+
+    if (cursor->cell_num < num_cells) {
+        uint32_t key = *get_leaf_node_key(node, cursor->cell_num);
+
+        if (key == key_to_insert) {
+            return STATEMENT_EXECUTION_DUPLICATE_KEY;
+        }
+    }
 
     insert_leaf_node(cursor, row_to_insert->id, row_to_insert);
-
     free(cursor);
 
     return STATEMENT_EXECUTION_SUCCESS;

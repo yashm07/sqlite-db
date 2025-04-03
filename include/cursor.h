@@ -27,13 +27,14 @@ typedef struct {
 Cursor* table_start(Table* table);
 
 /**
- * @brief Creates cursor at table end.
+ * @brief Moves cursor to location dependant on key value.
  *
  * @param Table* table pointer
+ * @param uint32_t key
  * 
  * @return Cursor* cursor at table end.
  */
-Cursor* table_end(Table* table);
+Cursor* table_find(Table* table, uint32_t key);
 
 /**
  * @brief Gets row address. If page not created, allocate memory.
@@ -59,4 +60,15 @@ void cursor_advance(Cursor* cursor);
  * @param Row* row
  */
 void insert_leaf_node(Cursor* cursor, uint32_t key, Row* row);
+
+/**
+ * @brief Insert leaf node.
+ *
+ * @param Table* table
+ * @param uint32_t page_num
+ * @param uint32_t key
+ * 
+ * @return Cursor* location of where key in leaf node
+ */
+Cursor* find_cell_leaf_node(Table* table, uint32_t page_num, uint32_t key);
 

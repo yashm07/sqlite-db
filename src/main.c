@@ -55,6 +55,9 @@ int main(int argc, char* argv[]) {
             case (STATEMENT_EXECUTION_ERROR):
                 printf("incomplete. ran into error.\n");
                 break;
+            case (STATEMENT_EXECUTION_DUPLICATE_KEY):
+                printf("error: duplicate key!");
+                break;
         }
     }
 
