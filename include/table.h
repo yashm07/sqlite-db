@@ -52,6 +52,15 @@ Pager* create_pager(const char* filename);
 Pager* get_page(Pager* pager, uint32_t pageNum);
 
 /**
+ * @brief Gets unused page.
+ *
+ * @param Pager* pager
+ * 
+ * @return uint32_t page number
+ */
+uint32_t get_unused_page_num(Pager* pager);
+
+/**
  * @brief Flushes page from cache into memory (file).
  *
  * @param Pager* pager

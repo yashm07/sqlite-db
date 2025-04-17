@@ -55,8 +55,7 @@ void insert_leaf_node(Cursor* cursor, uint32_t key, Row* row) {
     uint32_t num_cells = *get_leaf_node_num_cells(node);
 
     if (num_cells >= LEAF_NODE_MAX_CELLS) {
-        printf("error: the node is full. must split node.\n");
-        exit(EXIT_FAILURE);
+        split_and_insert_leaf_node(cursor, key, row);
     }
 
     if (cursor->cell_num < num_cells) {
@@ -100,4 +99,68 @@ Cursor* find_cell_leaf_node(Table* table, uint32_t page_num, uint32_t key) {
 
     cursor->cell_num = l;
     return cursor;
+};
+
+void split_and_insert_leaf_node(Cursor* cursor, uint32_t key, Row* row) {
+    void* old_node = get_page(cursor->table->pager, cursor->page_num);
+    
+    uint32_t unused_page_num = get_unused_page_num(cursor->table->pager);
+    void* new_node = get_page(cursor->table->pager, cursor->page_num);
+    init_leaf_node(new_node);
+
+    // move contents to new node, shift contents in old node down
+    for (uint32_t i = LEAF_NODE_MAX_CELLS; i >= 0; i--) {
+        void* destination_node;
+
+        if (i >= LEAF_NODE_LEFT_SPLIT_COUNT) {
+            destination_node = new_node;
+        } else {
+            destination_node = old_node;
+        }
+
+        uint32_t index_in_node = i % LEAF_NODE_LEFT_SPLIT_COUNT;
+        void* destination_addr = get_leaf_node_cell(destination_node, index_in_node);
+
+        if (i == cursor->cell_num) {
+            serialize_row(row, destination_addr);
+        } else if (i < cursor->cell_num) {
+            memcpy(destination_addr, get_leaf_node_cell(old_node, i), LEAF_NODE_CELL_SIZE);
+        } else {
+            memcpy(destination_addr, get_leaf_node_cell(old_node, i-1), LEAF_NODE_CELL_SIZE);
+        }
+    }
+
+    // update parent node
+    if (is_node_root(old_node)) {
+        create_new_root(cursor->table, unused_page_num);
+    } else {
+        printf("error: need to update parent logic after split.\n");
+        exit(EXIT_FAILURE);
+    }
+};
+
+void create_new_root(Table* table, uint32_t right_child_page_num) {
+    void* root_node = get_page(table->pager, table->root_page_num);
+
+    uint32_t left_child_page_num = get_unused_page_num(table->pager);
+    void* left_child = get_page(table->pager, left_child_page_num);
+
+    // root node contents -> left child
+    memcpy(left_child, root_node, PAGE_SIZE);
+    set_node_root_field(left_child, false);
+    
+    // set up root node
+    init_internal_node(root_node);
+    set_node_root_field(root_node, true);
+
+    *get_internal_node_num_keys(root_node) = 1;
+    
+    // TODO: rename func to ..._left_child
+    *get_internal_node_child(root_node, 0) = left_child_page_num;
+
+    // set key val of node to be max key of left child
+    uint32_t left_child_max_key = get_max_key(left_child);
+
+    *get_internal_node_key(root_node, 0) = left_child_max_key;
+    *get_internal_node_right_child(root_node) = right_child_page_num;
 };

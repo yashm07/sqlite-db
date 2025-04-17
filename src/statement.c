@@ -59,10 +59,6 @@ StatementExecutionStatus insert(Statement* statement, Table* table) {
     void *node = get_page(table->pager, table->root_page_num);
     uint32_t num_cells = *(get_leaf_node_num_cells(node));
 
-    if (num_cells >= LEAF_NODE_MAX_CELLS) {
-        return STATEMENT_EXECUTION_TABLE_FULL;
-    }
-
     Row* row_to_insert = &(statement->data);
 
     uint32_t key_to_insert = row_to_insert->id;

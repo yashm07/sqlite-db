@@ -92,3 +92,7 @@ void flush_page(Pager* pager, uint32_t pageNum) {
         exit(EXIT_FAILURE);
     }
 };
+
+uint32_t get_unused_page_num(Pager* pager) {
+    return pager->num_pages;
+}

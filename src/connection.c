@@ -13,6 +13,7 @@ Table* open_db_connection(const char* filename) {
     if (pager->num_pages == 0) {
         void* root_node = get_page(pager, 0);
         init_leaf_node(root_node);
+        set_node_root_field(root_node, true);
     }
 
     return table;
